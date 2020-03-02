@@ -1,0 +1,59 @@
+#!/bin/bash
+exec 2>err
+echo -e  "Avtor: Erokhin Vladimir"
+echo -e  "Nazvanie: Proverka kontrol'noi summi"
+echo -e  "Kratkoe opisanie: Snachala proizvoditsya proverka summi. Esli ona est', to vivoditsya znachenie, inache summa bud"
+while [ 1 == 1 ]
+do
+echo "err_first_line" > err
+a=1
+while [ $a -eq 1 ]
+do
+	echo "Vvedite put' k obrazu"
+	read pt
+	if [ -e $pt ]
+	then
+		checkisomd5 $pt 1> /dev/null #vstavlyaet put' i vipolnyaet komandu proverki
+		a=0
+	else
+		echo "File not found"
+		echo -e "Try again? y/n"
+		read otvet
+		if [ $otvet != "y" ]
+			then exit
+		fi
+	fi
+done
+if grep -a -q FAIL err
+then
+	echo -e "Bad file! Try another file."
+	> err
+elif grep -a -q NA err
+then
+	echo -e "File dont have MD5. Put MD5 in it? y/n"
+	read otvet
+	if [ $otvet == "y" ]
+	then
+		implantisomd5 $pt > result
+		grep -a md5 result
+	fi
+	> err
+elif grep -a -q PASS err
+then
+	echo -e "File have MD5."
+	checkisomd5 --md5sumonly $pt > result
+	grep -m1 "" result
+	> err
+fi
+echo "Povtorit' vipolnenie programmi? y/n"
+read otvet
+if [ $otvet != "y" ]
+then
+	if [ -s err ]
+	then
+		exit 250
+	else
+		exit
+	fi
+fi
+done
